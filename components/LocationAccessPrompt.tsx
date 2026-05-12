@@ -105,10 +105,6 @@ export function LocationAccessPrompt() {
     return null;
   }
 
-  if (permissionState === 'denied') {
-    return null;
-  }
-
   return (
     <div className="fixed bottom-4 right-4 z-[70] w-[22rem] max-w-[calc(100vw-2rem)] rounded-xl border border-amber-200 bg-white p-4 shadow-xl">
       <p className="text-sm font-semibold text-slate-900">Enable location access</p>
