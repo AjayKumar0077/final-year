@@ -5,7 +5,7 @@ import { useCurrentUserLocation } from '@/hooks/use-location-store';
 import { useSessionUserId } from '@/hooks/use-session';
 import { LOCATION_RETRY_EVENT } from '@/components/GeoLocationTracker';
 
-type PermissionStateLike = 'granted' | 'prompt' | 'denied' | 'unsupported';
+type PermissionStateLike = 'granted' | 'prompt' | 'unsupported';
 
 export function LocationAccessPrompt() {
   const location = useCurrentUserLocation();
@@ -86,7 +86,7 @@ export function LocationAccessPrompt() {
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
-          setPermissionState('denied');
+          setPermissionState('prompt');
         }
       },
       {
@@ -101,7 +101,7 @@ export function LocationAccessPrompt() {
     return null;
   }
 
-  if (location && permissionState !== 'denied') {
+  if (location) {
     return null;
   }
 
