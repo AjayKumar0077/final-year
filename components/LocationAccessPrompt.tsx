@@ -120,7 +120,7 @@ export function LocationAccessPrompt() {
         {checkingPermission ? 'Checking permission...' : `Status: ${permissionState}`}
       </div>
 
-      {permissionState === 'denied' && (
+      {permissionState !== 'granted' && permissionState !== 'prompt' && permissionState !== 'unsupported' && (
         <div className="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-2 text-xs text-red-700">
           <p className="font-semibold">Location is blocked in browser settings.</p>
           <p className="mt-1">Quick fix: Click the lock icon near the URL, allow Location for localhost, then press &quot;I enabled location&quot;.</p>

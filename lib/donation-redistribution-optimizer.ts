@@ -97,8 +97,8 @@ export function findOptimalRecipients(
     primaryRecipient,
     secondaryRecipients: shouldSplit ? recipients.slice(1, 2) : [],
     totalServed: calculatePeopleServed(donation),
-    efficiency: calculateEfficiency(primaryRecipient, shouldSplit ? recipients[1] : null),
-    plan: generateDistributionPlan(primaryRecipient, shouldSplit ? recipients[1] : null, donation),
+    efficiency: calculateEfficiency(primaryRecipient, shouldSplit ? recipients[1] : undefined),
+    plan: generateDistributionPlan(primaryRecipient, shouldSplit ? recipients[1] : undefined, donation),
   };
 
   // Log the redistribution plan
@@ -390,13 +390,15 @@ function logRedistributionPlan(plan: RedistributionPlan): void {
     localStorage.setItem(REDISTRIBUTION_HISTORY_KEY, JSON.stringify(history));
 
     writeAuditEvent({
+      actorId: 'system',
+      actorName: 'Redistribution System',
+      actorRole: 'ngo',
       action: 'redistribution_planned',
-      targetId: plan.donationId,
-      details: {
-        primaryNgo: plan.primaryRecipient.ngoId,
-        score: plan.primaryRecipient.score,
-        efficiency: plan.efficiency,
-      },
+      page: '/ngo/redistribution',
+      entityType: 'donation',
+      entityId: plan.donationId,
+      status: 'success',
+      detail: `primaryNgo=${plan.primaryRecipient.ngoId}; score=${plan.primaryRecipient.score}; efficiency=${plan.efficiency}`,
     });
   } catch (error) {
     console.error('Error logging redistribution plan:', error);

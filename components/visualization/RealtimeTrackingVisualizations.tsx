@@ -128,7 +128,7 @@ export function VolunteerTrackingVisualization({
                     transform: 'translate(-50%, -50%)',
                   }}
                   onClick={() => setSelectedVolunteer(isSelected ? null : volunteer.id)}
-                  aria-label={`Volunteer: ${volunteer.name}. Status: ${volunteer.status}. Speed: ${volunteer.speed.toFixed(1)} km/h`}
+                  aria-label={`Volunteer: ${volunteer.name}. Status: ${volunteer.status}. Speed: ${volunteer.speed ? volunteer.speed.toFixed(1) : '0'} km/h`}
                   title={`${volunteer.name} - ${volunteer.status}`}
                 >
                   <div className="relative">

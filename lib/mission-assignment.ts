@@ -68,9 +68,9 @@ export async function findBestVolunteerForMission(
     return null;
   }
 
-  // Get mission location
-  const missionLat = mission.pickup_latitude ?? mission.location_latitude;
-  const missionLon = mission.pickup_longitude ?? mission.location_longitude;
+  // Get mission location (prefer pickup location, fallback to delivery)
+  const missionLat = mission.pickup_latitude ?? mission.delivery_latitude;
+  const missionLon = mission.pickup_longitude ?? mission.delivery_longitude;
 
   if (typeof missionLat !== 'number' || typeof missionLon !== 'number') {
     console.warn('Mission has no valid location');
@@ -122,13 +122,15 @@ export async function findBestVolunteerForMission(
   // Log assignment
   logAssignment(result);
   writeAuditEvent({
+    actorId: assignedVolunteer.id,
+    actorName: assignedVolunteer.full_name || assignedVolunteer.email || 'Volunteer',
+    actorRole: 'volunteer',
     action: 'mission_assigned',
-    targetId: mission.id,
-    details: {
-      volunteerId: assignedVolunteer.id,
-      score: topScore.score,
-      eta: estimatedArrivalMinutes,
-    },
+    page: '/volunteer/missions',
+    entityType: 'mission',
+    entityId: mission.id,
+    status: 'success',
+    detail: `volunteerId=${assignedVolunteer.id}; score=${topScore.score}; eta=${estimatedArrivalMinutes}min`,
   });
 
   return result;
@@ -286,9 +288,8 @@ function calculatePerformanceScore(volunteerId: string): number {
 function calculatePriorityMatchScore(volunteer: UserProfile, mission: Mission): number {
   let score = 10;
 
-  // Check if mission priority aligns with volunteer capabilities
-  if (mission.priority === 'urgent' && mission.category === 'medical') {
-    // Might want to check if volunteer is trained in medical assistance
+  // Bonus for urgent missions
+  if (mission.priority === 'urgent') {
     score += 3;
   }
 
@@ -409,9 +410,15 @@ export function updateAssignmentMetrics(
     localStorage.setItem(ASSIGNMENT_METRICS_KEY, JSON.stringify(allMetrics));
 
     writeAuditEvent({
+      actorId: 'system',
+      actorName: 'Assignment System',
+      actorRole: 'ngo',
       action: 'assignment_metrics_updated',
-      targetId: volunteerId,
-      details: current,
+      page: '/ngo/assignments',
+      entityType: 'user',
+      entityId: volunteerId,
+      status: 'success',
+      detail: `acceptanceRate=${current.acceptanceRate}; totalAssignments=${current.totalAssignments}; completedAssignments=${current.completedAssignments}`,
     });
   } catch (error) {
     console.error('Error updating assignment metrics:', error);

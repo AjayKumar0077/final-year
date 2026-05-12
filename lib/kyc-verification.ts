@@ -142,7 +142,7 @@ export function submitKycVerification(data: Omit<KycVerification, 'status' | 'cr
   try {
     const validation = validateKycData(data);
     if (!validation.valid) {
-      errorHandler.handleValidationError('KYC validation failed', validation.errors.join(', '));
+      errorHandler.handleValidationError({ validation: validation.errors.join(', ') });
       return null;
     }
 
@@ -160,18 +160,21 @@ export function submitKycVerification(data: Omit<KycVerification, 'status' | 'cr
     localStorage.setItem(STORAGE_KEY, JSON.stringify(verifications));
 
     writeAuditEvent({
+      actorId: data.recipientId,
+      actorName: 'User',
+      actorRole: 'donor',
       action: 'kyc_submitted',
-      targetId: data.recipientId,
-      details: {
-        verificationScore,
-        documentCount: data.documents.length,
-      },
+      page: '/dashboard',
+      entityType: 'user',
+      entityId: data.recipientId,
+      status: 'success',
+      detail: `verificationScore=${verificationScore}; documentCount=${data.documents.length}`,
     });
 
     window.dispatchEvent(new Event(CHANGE_EVENT));
     return verification;
   } catch (error) {
-    errorHandler.handleDatabaseError('Error submitting KYC verification', error);
+    errorHandler.handleDatabaseError(error instanceof Error ? error : new Error('Error submitting KYC verification'));
     return null;
   }
 }
@@ -190,7 +193,7 @@ export function reviewKycVerification(
 
   try {
     if (!recipientId || !reviewedBy || !reason) {
-      errorHandler.handleValidationError('Invalid review parameters', 'recipientId, reviewedBy, and reason are required');
+      errorHandler.handleValidationError({ parameters: 'recipientId, reviewedBy, and reason are required' });
       return null;
     }
 
@@ -198,7 +201,7 @@ export function reviewKycVerification(
     const verification = verifications[recipientId];
 
     if (!verification) {
-      errorHandler.handleValidationError('Verification not found', `No KYC verification found for recipient ${recipientId}`);
+      errorHandler.handleValidationError({ verification: `No KYC verification found for recipient ${recipientId}` });
       return null;
     }
 
@@ -240,19 +243,21 @@ export function reviewKycVerification(
     });
 
     writeAuditEvent({
+      actorId: reviewedBy,
+      actorName: reviewedBy,
+      actorRole: 'ngo',
       action: 'kyc_reviewed',
-      targetId: recipientId,
-      details: {
-        status: finalStatus,
-        score: newScore,
-        reviewedBy,
-      },
+      page: '/ngo/kyc-review',
+      entityType: 'user',
+      entityId: recipientId,
+      status: finalStatus === 'approved' ? 'success' : 'error',
+      detail: `status=${finalStatus}; score=${newScore}; reason=${reason}`,
     });
 
     window.dispatchEvent(new Event(CHANGE_EVENT));
     return verification;
   } catch (error) {
-    errorHandler.handleDatabaseError('Error reviewing KYC verification', error);
+    errorHandler.handleDatabaseError(error instanceof Error ? error : new Error('Error reviewing KYC verification'));
     return null;
   }
 }

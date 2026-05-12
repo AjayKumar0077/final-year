@@ -7,6 +7,7 @@ export interface StoredLocation {
   latitude: number;
   longitude: number;
   timestamp: number;
+  accuracy?: number;
 }
 
 const STORAGE_KEY = 'user_locations';

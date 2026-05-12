@@ -66,8 +66,14 @@ export function useKycVerification(recipientId?: string) {
           setVerification(result);
           setReviewHistory(getKycReviewHistory(recipientId || ''));
           writeAuditEvent({
+            actorId: recipientId || '',
+            actorName: 'User',
+            actorRole: 'donor',
             action: 'kyc_submitted_via_hook',
-            targetId: recipientId || '',
+            page: '/dashboard',
+            entityType: 'user',
+            entityId: recipientId || '',
+            status: 'success',
           });
         } else {
           setError('Failed to submit KYC verification');
